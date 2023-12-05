@@ -282,13 +282,15 @@ function calculateAverage (learnerID, learnerSubmissionObjArr) {
         let assignmentID = assignmentObj['assignment_id'];
     
         if (assignmentObj['learner_id'] == learnerID) {
-            let learnerScore = assignmentID['learner_score'];
+            let learnerScore = assignmentObj['learner_score'];
+
             let lateScore = 0;
 
             if (assignmentObj.isLate) {
-               lateScore = assignmentObj['points_possible']*0.1;
+                lateScore = assignmentObj['points_possible']*0.1;
+                learnerScore -= lateScore;
             }
-            resultObj[assignmentID] = (assignmentObj['learner_score'] - ) / assignmentObj['points_possible'];
+            resultObj[assignmentID] = learnerScore/ assignmentObj['points_possible'];
 
             totalLearnerScore += learnerScore;
             totalPointsPossible += assignmentObj['points_possible'];
@@ -296,8 +298,6 @@ function calculateAverage (learnerID, learnerSubmissionObjArr) {
     }
     // calculate average 
     resultObj['avg'] = totalLearnerScore/totalPointsPossible;
-    console.log(totalLearnerScore);
-    console.log(totalPointsPossible)
 
     return resultObj;
 }
@@ -315,14 +315,14 @@ function getLearnerData2(courseInfo, assignmentGroup, learnerSubmission) {
     }
     
     const allAssignmentData = getAssignmentData(AssignmentGroup, LearnerSubmissions);
-    console.log(allAssignmentData);
-    console.log('testing function')
-    console.log(calculateAverage(125, allAssignmentData));
+    
     const result = [];
+
     const allLearnerIdsArr = getLearnerUniqueID(learnerSubmission);
-
-
-
+    allLearnerIdsArr.forEach((id) => {
+        const resultObj = calculateAverage(id, allAssignmentData);
+        result.push(resultObj);
+    })
     return result;
 }
 
