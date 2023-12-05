@@ -77,17 +77,10 @@ const LearnerSubmissions = [
     }
     ];
 
-//   the output of your program is an array of objects  
-//   const result = {
-//     "id": number,
-//     "avg": number,
-//     "assignment_id": number,
-//     }
 
-
-// Initial approach: make a function to compile all the submitted assignments and score based on each student ID, store it as an object, then use this info in the main function to calculate the average.
+// The Approach: calculate based on the student ID, make a function to compile all the submitted assignments and score for each student ID, store it as an object, then use this info in the main function to process further.
 // This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the getLearnerScore function below.
-//
+// This approach did not work well since the program did not calculate the correct average scrore and I cannot figure out how to exclude the assignment that is not yet due.
 
 
 function getLearnerScore(learnerID, learnerSubmission, assignmentArr) {
@@ -133,15 +126,18 @@ function getLearnerScore(learnerID, learnerSubmission, assignmentArr) {
             else {
                 calculatedScore = learnerScore/assignmentScore
             }
-             
-
             learnerScoreObj[assignmentId] = calculatedScore;
         }
     }
-
-
     return learnerScoreObj;
 }
+
+
+// SECOND Approach WIP: Calculate based on the AssignmentGroup object??
+
+
+
+
 
 // Helper function to get the date base on string date, if no argument then return today date
 function getDate(date) {
@@ -191,6 +187,15 @@ function getLearnerUniqueID (learnerSubmission) {
     return uniqueSet;
 }
 
+// HELPER FUNCTION to get average score - DID NOT HAVE THE CORRECT ANSWER
+function getAverageScore(scoreObj) {
+    const totalKeys = Object.keys(scoreObj).length;
+    let totalPoints = 0;
+    for (let key in scoreObj) {
+        totalPoints += scoreObj[key];
+    }
+    return totalPoints/totalKeys;
+}
 
 // MAIN FUNCTION
 function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
@@ -210,8 +215,8 @@ function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
     // iterate through the set to find all submission under each student ID
     allLearnerIds.forEach( (id) => {
         const learnerObj = getLearnerScore(id, learnerSubmission, assignmentGroup.assignments);
+        learnerObj['avg'] = getAverageScore(learnerObj);
         learnerObj['id'] = id;
-        // learnerObj['avg'] = getAverageScore(learnerObj);
         result.push(learnerObj);
     } )
     
