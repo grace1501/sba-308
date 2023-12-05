@@ -77,6 +77,9 @@ const LearnerSubmissions = [
     }
     ];
 
+
+
+    /////////////////////////////////////////////////////
 // ALL HELPER FUNCTIONS HERE
 
 // Helper function to get the date base on string date, if no argument then return today date
@@ -204,7 +207,6 @@ function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
     }
     
     const result = [];
-
     const allLearnerIds = getLearnerUniqueID(learnerSubmission);
 
     // iterate through the set to find all submission under each student ID
@@ -214,8 +216,6 @@ function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
         learnerObj['id'] = id;
         result.push(learnerObj);
     } )
-    
-
     return result;
 }
 
@@ -227,9 +227,110 @@ console.log(result);
 
 
 
+/////////////////////////////////////////////////////////////////////////////////////
+// SECOND Approach WIP: Calculate based on the AssignmentGroup object. Go through each learnerSubmission object, check assignmentGroup to add properties of points possible and see if the assignment is yet due, on time or late. Store this is an array of objects. Apply calculation later.
 
-// SECOND Approach WIP: Calculate based on the AssignmentGroup object. Go through each learnerSubmission object, check assignmentGroup to add properties of points possible and see if the assignment is yet due, on time or late. Store this is an array of objects. 
+function getAssignmentData(assignmentGroup, learnerSubmission) {
+    let assignmentObjArr = assignmentGroup.assignments;
+    
+    let resultArr = [];
 
+    // iterate through learnerSubmission array, check each assignment id, get its extra info on point possible and due time from assignmentGroup, store in result array
+    for (let i=0; i < learnerSubmission.length; i++) {
+        let submissionItem = learnerSubmission[i];
+
+        let resultObj = {};
+        resultObj['learner_id'] = submissionItem['learner_id'];
+        resultObj['assignment_id'] = submissionItem['assignment_id'];
+        resultObj['learner_score'] = submissionItem.submission['score'];
+        resultObj['points_possible'] = getPointsPossible(resultObj['assignment_id'], assignmentObjArr)
+    
+        resultObj['isLate'] = false;
+        
+        // compare the time submitted with time due
+        let assignmentDueTime = getDueTime(resultObj['assignment_id'], assignmentObjArr);
+
+        let assignmentDueTimeDate = getDate(assignmentDueTime);
+        let learnerSubmitTime = getDate(submissionItem.submission['submitted_at']);
+        let today = getDate();
+
+        // is this assignment due yet? if not, then exclude it
+        if (today < assignmentDueTimeDate) {
+            continue;
+        }
+
+        // is this on time or late
+        if (assignmentDueTimeDate < learnerSubmitTime) {
+            resultObj['isLate'] = true;
+        }
+        resultArr.push(resultObj);
+    }
+    return resultArr;
+}
+
+
+// calculate the percentage and average based on each student ID 
+function calculateAverage (learnerID, learnerSubmissionObjArr) {
+    let resultObj = {};
+    resultObj['id'] = learnerID;
+
+    let totalLearnerScore = 0;
+    let totalPointsPossible = 0;
+
+    for(let i=0; i < learnerSubmissionObjArr.length; i++) {
+        let assignmentObj = learnerSubmissionObjArr[i];
+        let assignmentID = assignmentObj['assignment_id'];
+    
+        if (assignmentObj['learner_id'] == learnerID) {
+            let learnerScore = assignmentID['learner_score'];
+            let lateScore = 0;
+
+            if (assignmentObj.isLate) {
+               lateScore = assignmentObj['points_possible']*0.1;
+            }
+            resultObj[assignmentID] = (assignmentObj['learner_score'] - ) / assignmentObj['points_possible'];
+
+            totalLearnerScore += learnerScore;
+            totalPointsPossible += assignmentObj['points_possible'];
+        }
+    }
+    // calculate average 
+    resultObj['avg'] = totalLearnerScore/totalPointsPossible;
+    console.log(totalLearnerScore);
+    console.log(totalPointsPossible)
+
+    return resultObj;
+}
+
+
+// MAIN FUNCTION FOR SECOND APPROACH
+function getLearnerData2(courseInfo, assignmentGroup, learnerSubmission) {
+    // throw an error if the course id do not match
+    try {
+        if (courseInfo['id'] !== assignmentGroup['course_id']) {
+            throw new Error('The AssignmentGroup does not belong to this course, please check course ID and try again.');
+        }        
+    } catch (error) {
+        return error; //this will end the program
+    }
+    
+    const allAssignmentData = getAssignmentData(AssignmentGroup, LearnerSubmissions);
+    console.log(allAssignmentData);
+    console.log('testing function')
+    console.log(calculateAverage(125, allAssignmentData));
+    const result = [];
+    const allLearnerIdsArr = getLearnerUniqueID(learnerSubmission);
+
+
+
+    return result;
+}
+
+
+const result2 = getLearnerData2(CourseInfo, AssignmentGroup, LearnerSubmissions);
+
+console.log('This is the result of the whole program (second approach)')
+console.log(result2);
 
 
 
