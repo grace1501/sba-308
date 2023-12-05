@@ -82,10 +82,13 @@ const LearnerSubmissions = [
 //     "id": number,
 //     "avg": number,
 //     "assignment_id": number,
-// }
+//     }
 
+// Initial approach: make a function to compile all the submitted assignments and score based on each student ID, store it as an object, then use this info in the main function to calculate the average.
+// This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the function below.
+// I feel like this is not the best approach since the program has to process the learner submission array 
 
-function calculateLearnerScore(learnerID, assignmentInfo, learnerSubmission) {
+function calculateLearnerScore(learnerID, learnerSubmission) {
     // make a learnerData object to store all assignments submitted by one learner
     const learnerData = {
         'id': learnerID,
@@ -105,22 +108,35 @@ function calculateLearnerScore(learnerID, assignmentInfo, learnerSubmission) {
 console.log(calculateLearnerScore(132, AssignmentGroup['assignments'], LearnerSubmissions));
 
 
+function getLearnerUniqueID (learnerSubmission) {
+    const uniqueSet = new Set();
+    for (let i=0; i < learnerSubmission.length; i++) {
+        let learnerSubmissionObj = learnerSubmission[i];
+        uniqueSet.add(learnerSubmissionObj['learner_id'])
+        
+    }
+    return uniqueSet;
+}
+
+console.log(getLearnerUniqueID(LearnerSubmissions));
 
 function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
+    // throw an error if the course id do not match
     try {
         if (courseInfo['id'] !== assignmentGroup['course_id']) {
-            throw new Error('The AssignmentGroup does not belong to this course');
+            throw new Error('The AssignmentGroup does not belong to this course, please check course ID and try again.');
         }        
     } catch (error) {
-        return error;
+        return error; //this will end the program
     }
     
+
     const result = [];
 
     return result;
 }
 
 
-const result = getLearnerData(CourseInfo, AssignmentGroup, LearnerSubmissions);
+// const result = getLearnerData(CourseInfo, AssignmentGroup, LearnerSubmissions);
 
-console.log(result);
+// console.log(result);
