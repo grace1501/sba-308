@@ -77,67 +77,7 @@ const LearnerSubmissions = [
     }
     ];
 
-
-// The Approach: calculate based on the student ID, make a function to compile all the submitted assignments and score for each student ID, store it as an object, then use this info in the main function to process further.
-// This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the getLearnerScore function below.
-// This approach did not work well since the program did not calculate the correct average scrore and I cannot figure out how to exclude the assignment that is not yet due.
-
-
-function getLearnerScore(learnerID, learnerSubmission, assignmentArr) {
-    // make a learnerData object to store all assignments submitted by one learner
-    const learnerScoreObj = {};
-
-     // read though the learnerSubmission array to record all the submissions under each learner id
-    for (let index in learnerSubmission){
-        let learnerSubmissionObj = learnerSubmission[index];
-
-        if (learnerSubmissionObj['learner_id'] == learnerID) {
-            let assignmentId = learnerSubmissionObj['assignment_id'];
-
-            let learnerScore = learnerSubmissionObj['submission']['score'];
-            let learnerSubmitTime = learnerSubmissionObj['submission']['submitted_at'];
-            let isLate = false;
-
-            let assignmentScore;
-            try {
-                assignmentScore = getPointsPossible(assignmentId, assignmentArr);
-            } catch (error) {
-                console.log(error);
-            };
-
-            if (assignmentScore < 0) {
-                break;
-            }
-
-            let assignmentDueTime;
-            try {
-                assignmentDueTime = getDueTime(assignmentId, assignmentArr);
-            } catch (error) {
-                console.log(error);
-                break;
-            }
-
-            // calculate score base on if submitted late or not
-            let calculatedScore;
-            if (assignmentDueTime < learnerSubmitTime) {
-                isLate = true;
-                calculatedScore = (learnerScore - assignmentScore*0.1)/assignmentScore;
-            }
-            else {
-                calculatedScore = learnerScore/assignmentScore
-            }
-            learnerScoreObj[assignmentId] = calculatedScore;
-        }
-    }
-    return learnerScoreObj;
-}
-
-
-// SECOND Approach WIP: Calculate based on the AssignmentGroup object??
-
-
-
-
+// ALL HELPER FUNCTIONS HERE
 
 // Helper function to get the date base on string date, if no argument then return today date
 function getDate(date) {
@@ -197,7 +137,62 @@ function getAverageScore(scoreObj) {
     return totalPoints/totalKeys;
 }
 
-// MAIN FUNCTION
+
+// FIRST Approach: calculate based on the student ID, make a function to compile all the submitted assignments and score for each student ID, store it as an object, then use this info in the main function to process further.
+// This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the getLearnerScore function below.
+// This approach did not work well since the program did not calculate the correct average scrore and I cannot figure out how to exclude the assignment that is not yet due.
+
+
+function getLearnerScore(learnerID, learnerSubmission, assignmentArr) {
+    // make a learnerData object to store all assignments submitted by one learner
+    const learnerScoreObj = {};
+
+     // read though the learnerSubmission array to record all the submissions under each learner id
+    for (let index in learnerSubmission){
+        let learnerSubmissionObj = learnerSubmission[index];
+
+        if (learnerSubmissionObj['learner_id'] == learnerID) {
+            let assignmentId = learnerSubmissionObj['assignment_id'];
+
+            let learnerScore = learnerSubmissionObj['submission']['score'];
+            let learnerSubmitTime = learnerSubmissionObj['submission']['submitted_at'];
+            let isLate = false;
+
+            let assignmentScore;
+            try {
+                assignmentScore = getPointsPossible(assignmentId, assignmentArr);
+            } catch (error) {
+                console.log(error);
+            };
+
+            if (assignmentScore < 0) {
+                break;
+            }
+
+            let assignmentDueTime;
+            try {
+                assignmentDueTime = getDueTime(assignmentId, assignmentArr);
+            } catch (error) {
+                console.log(error);
+                break;
+            }
+
+            // calculate score base on if submitted late or not
+            let calculatedScore;
+            if (assignmentDueTime < learnerSubmitTime) {
+                isLate = true;
+                calculatedScore = (learnerScore - assignmentScore*0.1)/assignmentScore;
+            }
+            else {
+                calculatedScore = learnerScore/assignmentScore
+            }
+            learnerScoreObj[assignmentId] = calculatedScore;
+        }
+    }
+    return learnerScoreObj;
+}
+
+// MAIN FUNCTION FOR FIRST APPROACH
 function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
     // throw an error if the course id do not match
     try {
@@ -227,6 +222,20 @@ function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
 
 const result = getLearnerData(CourseInfo, AssignmentGroup, LearnerSubmissions);
 
-console.log('This is the result of the whole program')
+console.log('This is the result of the whole program (first approach)')
 console.log(result);
+
+
+
+
+// SECOND Approach WIP: Calculate based on the AssignmentGroup object. Go through each learnerSubmission object, check assignmentGroup to add properties of points possible and see if the assignment is yet due, on time or late. Store this is an array of objects. 
+
+
+
+
+
+
+
+
+
 
