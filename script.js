@@ -84,30 +84,103 @@ const LearnerSubmissions = [
 //     "assignment_id": number,
 //     }
 
-// Initial approach: make a function to compile all the submitted assignments and score based on each student ID, store it as an object, then use this info in the main function to calculate the average.
-// This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the function below.
-// I feel like this is not the best approach since the program has to process the learner submission array 
 
-function calculateLearnerScore(learnerID, learnerSubmission) {
+// Initial approach: make a function to compile all the submitted assignments and score based on each student ID, store it as an object, then use this info in the main function to calculate the average.
+// This approach will need to process the learner submission array to pick out all the student IDs, then filter out the duplicates to find unique IDs, then feed it into the getLearnerScore function below.
+//
+
+
+function getLearnerScore(learnerID, learnerSubmission, assignmentArr) {
     // make a learnerData object to store all assignments submitted by one learner
-    const learnerData = {
-        'id': learnerID,
-    };
+    const learnerScoreObj = {};
+
      // read though the learnerSubmission array to record all the submissions under each learner id
-    for (let i=0; i<learnerSubmission.length; i++){
-        let learnerSubmissionObj = learnerSubmission[i];
-        
+    for (let index in learnerSubmission){
+        let learnerSubmissionObj = learnerSubmission[index];
+
         if (learnerSubmissionObj['learner_id'] == learnerID) {
             let assignmentId = learnerSubmissionObj['assignment_id'];
-            learnerData[assignmentId] = learnerSubmissionObj['submission']['score'];
+
+            let learnerScore = learnerSubmissionObj['submission']['score'];
+            let learnerSubmitTime = learnerSubmissionObj['submission']['submitted_at'];
+            let isLate = false;
+
+            let assignmentScore;
+            try {
+                assignmentScore = getPointsPossible(assignmentId, assignmentArr);
+            } catch (error) {
+                console.log(error);
+            };
+
+            if (assignmentScore < 0) {
+                break;
+            }
+
+            let assignmentDueTime;
+            try {
+                assignmentDueTime = getDueTime(assignmentId, assignmentArr);
+            } catch (error) {
+                console.log(error);
+                break;
+            }
+
+            // calculate score base on if submitted late or not
+            let calculatedScore;
+            if (assignmentDueTime < learnerSubmitTime) {
+                isLate = true;
+                calculatedScore = (learnerScore - assignmentScore*0.1)/assignmentScore;
+            }
+            else {
+                calculatedScore = learnerScore/assignmentScore
+            }
+             
+
+            learnerScoreObj[assignmentId] = calculatedScore;
         }
     }
-    return learnerData;
+
+
+    return learnerScoreObj;
 }
 
-console.log(calculateLearnerScore(132, AssignmentGroup['assignments'], LearnerSubmissions));
+// Helper function to get the date base on string date, if no argument then return today date
+function getDate(date) {
+    let dateObj;
+    if (date) {
+        dateObj = new Date(date);
+    }
+    else {
+        dateObj = new Date();
+    }
+    return dateObj;
+}
 
 
+// Helper function to get the points possible based on assignment id
+function getPointsPossible(id, assignmentArr) {
+    for (let index in assignmentArr) {
+        let item = assignmentArr[index];
+
+        if (id == item.id) {
+            return item.points_possible;
+        }
+    }
+    throw new Error('The points possible for this assignment ID cannot be found');
+}
+
+// Helper function to get the time due based on assignment id
+function getDueTime(id, assignmentArr) {
+    for (let index in assignmentArr) {
+        let item = assignmentArr[index];
+
+        if (id == item.id) {
+            return item.due_at;
+        }
+    }
+    throw new Error('The due time for this assignment ID cannot be found');
+}
+
+// HELPER FUNCTION to get learner unique id (a set)
 function getLearnerUniqueID (learnerSubmission) {
     const uniqueSet = new Set();
     for (let i=0; i < learnerSubmission.length; i++) {
@@ -118,8 +191,8 @@ function getLearnerUniqueID (learnerSubmission) {
     return uniqueSet;
 }
 
-console.log(getLearnerUniqueID(LearnerSubmissions));
 
+// MAIN FUNCTION
 function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
     // throw an error if the course id do not match
     try {
@@ -130,13 +203,25 @@ function getLearnerData(courseInfo, assignmentGroup, learnerSubmission) {
         return error; //this will end the program
     }
     
-
     const result = [];
+
+    const allLearnerIds = getLearnerUniqueID(learnerSubmission);
+
+    // iterate through the set to find all submission under each student ID
+    allLearnerIds.forEach( (id) => {
+        const learnerObj = getLearnerScore(id, learnerSubmission, assignmentGroup.assignments);
+        learnerObj['id'] = id;
+        // learnerObj['avg'] = getAverageScore(learnerObj);
+        result.push(learnerObj);
+    } )
+    
 
     return result;
 }
 
 
-// const result = getLearnerData(CourseInfo, AssignmentGroup, LearnerSubmissions);
+const result = getLearnerData(CourseInfo, AssignmentGroup, LearnerSubmissions);
 
-// console.log(result);
+console.log('This is the result of the whole program')
+console.log(result);
+
