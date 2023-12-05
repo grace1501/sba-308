@@ -3,7 +3,7 @@ SBA 308: JavaScript Fundamentals
 
 I tried 2 different ways to approach this problems, first approach did not return the correct result, the second one did.
 
-Summary of the second approach:
+Summary of the second approach:\n
 Helper functions: 
 
 function getDate(date): get the date base on string date, if no argument then return today date
